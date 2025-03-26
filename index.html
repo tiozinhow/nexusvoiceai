@@ -292,17 +292,6 @@
             box-shadow: inset 0 0 10px var(--border);
         }
 
-        @keyframes rotate {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.1); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.8; transform: scale(0.9); }
-            50% { opacity: 0.4; transform: scale(1.1); }
-        }
-
         .footer {
             position: fixed;
             bottom: 0;
@@ -329,6 +318,63 @@
 
         .footer a:hover {
             color: var(--primary);
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1.5rem 3rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            z-index: 1001;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.9);
+            display: none;
+            z-index: 1002;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            max-width: 800px;
+            margin: 0 auto;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; transform: scale(0.9); }
+            50% { opacity: 0.4; transform: scale(1.1); }
         }
 
         @media (max-width: 768px) {
@@ -417,10 +463,17 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <div id="modal-text"></div>
+        </div>
+    </div>
+
     <div class="footer">
         <span>&copy; 2024 Nexus Voice AI. Todos os direitos reservados.</span>
-        <a href="termos.html" target="_blank">Termos de Uso</a>
-        <a href="privacidade.html" target="_blank">Política de Privacidade</a>
+        <a href="#" onclick="showTerms()">Termos de Uso</a>
+        <a href="#" onclick="showPrivacy()">Política de Privacidade</a>
     </div>
     
     <script>
@@ -653,19 +706,45 @@
 
         function showMessage(message, type) {
             const toast = document.createElement('div');
-            toast.style.position = 'fixed';
-            toast.style.bottom = '20px';
-            toast.style.left = '50%';
-            toast.style.transform = 'translateX(-50%)';
+            toast.className = 'toast';
             toast.style.background = type === 'error' ? '#EF4444' : '#10B981';
-            toast.style.color = 'white';
-            toast.style.padding = '1rem 2rem';
-            toast.style.borderRadius = '0.5rem';
             toast.textContent = message;
+            
             document.body.appendChild(toast);
-
-            setTimeout(() => toast.remove(), 3000);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
         }
+
+        function showTerms() {
+            fetch('termos.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('modal-text').innerHTML = data;
+                    document.getElementById('modal').style.display = 'block';
+                });
+        }
+
+        function showPrivacy() {
+            fetch('privacidade.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('modal-text').innerHTML = data;
+                    document.getElementById('modal').style.display = 'block';
+                });
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        // Fechar modal ao clicar fora
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if(e.target.classList.contains('modal-overlay')) {
+                closeModal();
+            }
+        });
 
         renderHistory();
     </script>
