@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Voice AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366F1;
+            --secondary: #4F46E5;
+            --accent: #818CF8;
+            --background: #0F172A;
+            --surface: #1E293B;
+            --text: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --border: #334155;
+            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 100px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+        }
+
+        .main-panel {
+            background: var(--surface);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin: 0 0 2rem 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-group {
+            margin-bottom: 2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 1.5rem;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 1rem;
+            color: var(--text);
+            font-size: 1rem;
+            min-height: 150px;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .voice-select {
+            position: relative;
+            width: 100%;
+        }
+
+        .voice-select select {
+            width: 100%;
+            padding: 1rem;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 1rem;
+            color: var(--text);
+            font-size: 1rem;
+            appearance: none;
+        }
+
+        .voice-select::after {
+            content: "▾";
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--gradient);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .history-panel {
+            background: var(--surface);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            height: calc(100vh - 160px);
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+
+        .history-item {
+            background: var(--background);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .history-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
+        }
+
+        .history-item.playing {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(79, 70, 229, 0.1) 100%);
+            border-color: var(--primary);
+        }
+
+        .item-text {
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-details {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            align-items: center;
+        }
+
+        .history-controls {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+        }
+
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 12px;
+            background: var(--surface);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.05);
+            background: var(--gradient);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+
+        .audio-player {
+            margin-top: 2rem;
+            background: var(--surface);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .progress {
+            width: 0%;
+            height: 100%;
+            background: var(--gradient);
+            transition: width 0.1s linear;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .loading-content {
+            background: var(--surface);
+            padding: 3rem;
+            border-radius: 2rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .holographic-loader {
+            width: 100px;
+            height: 100px;
+            margin: 2rem auto;
+            border-radius: 50%;
+            position: relative;
+            background: var(--gradient);
+            animation: rotate 2s linear infinite;
+            box-shadow: 0 0 20px var(--primary),
+                        0 0 40px var(--secondary),
+                        inset 0 0 15px rgba(255,255,255,0.2);
+        }
+
+        .holographic-loader::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border-radius: 50%;
+            background: var(--gradient);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .holographic-loader::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+            border-radius: 50%;
+            background: var(--surface);
+            box-shadow: inset 0 0 10px var(--border);
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            display: flex;
+            gap: 1.5rem;
+            background: var(--surface);
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer a:hover {
+            color: var(--primary);
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1.5rem 3rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            z-index: 1001;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.9);
+            display: none;
+            z-index: 1002;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            max-width: 800px;
+            margin: 0 auto;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        .voice-info {
+            margin-top: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .voice-details {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .voice-details small {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--primary);
+        }
+
+        .voice-tag {
+            background: var(--gradient);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; transform: scale(0.9); }
+            50% { opacity: 0.4; transform: scale(1.1); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            
+            .history-panel {
+                height: auto;
+                max-height: 400px;
+            }
+            
+            .footer {
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 0.8rem;
+            }
+            
+            body {
+                padding: 1rem;
+                padding-bottom: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <main class="main-panel">
+            <h1><i class="fas fa-robot"></i> Nexus Voice AI</h1>
+            
+            <div class="input-group">
+                <label>Texto para Conversão</label>
+                <textarea id="text-input" placeholder="Digite seu texto aqui..."></textarea>
+            </div>
+
+            <div class="input-group">
+                <label>Selecione a Voz</label>
+                <div class="voice-select">
+                    <select id="voice-select">
+                        <option value="nova" data-type="Profissional" data-gender="Feminino">Nova - Voz Natural</option>
+                        <option value="alloy" data-type="Profissional" data-gender="Masculino">Alloy - Voz Clara</option>
+                        <option value="echo" data-type="Apresentação" data-gender="Masculino">Echo - Apresentador</option>
+                        <option value="shimmer" data-type="Empática" data-gender="Feminino">Shimmer - Voz Empática</option>
+                        <option value="fable" data-type="Narração" data-gender="Neutro">Fable - Narração</option>
+                        <option value="onyx" data-type="Autoridade" data-gender="Masculino">Onyx - Voz de Autoridade</option>
+                        <option value="coral" data-type="Amigável" data-gender="Feminino">Coral - Voz Amigável</option>
+                        <option value="verse" data-type="Experimental" data-gender="Feminino">Verse - Musical</option>
+                        <option value="ballad" data-type="Experimental" data-gender="Masculino">Ballad - Poética</option>
+                    </select>
+                </div>
+                <div id="voice-info" class="voice-info"></div>
+            </div>
+
+            <button class="btn" onclick="generateAudio()">
+                <i class="fas fa-sync"></i>
+                Gerar Áudio
+            </button>
+
+            <div class="audio-player hidden" id="audio-player">
+                <div class="progress-bar">
+                    <div class="progress" id="progress"></div>
+                </div>
+                <div class="time-display">
+                    <span id="current-time">00:00</span>
+                    <span id="duration">00:00</span>
+                </div>
+                <div class="history-controls" style="margin-top: 1.5rem;">
+                    <button class="control-btn" id="play-btn" onclick="togglePlay()">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="control-btn" onclick="downloadCurrentAudio()">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <aside class="history-panel">
+            <h2>Histórico</h2>
+            <div id="history-list"></div>
+        </aside>
+    </div>
+
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-content">
+            <div class="holographic-loader"></div>
+            <h3>Processando sua requisição</h3>
+            <p id="loading-status"><i class="fas fa-cog fa-spin"></i> Inicializando...</p>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <div id="modal-text"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <span>&copy; 2025 Nexus Voice AI. Todos os direitos reservados.</span>
+        <a href="#" onclick="showTerms()">Termos de Uso</a>
+        <a href="#" onclick="showPrivacy()">Política de Privacidade</a>
+    </div>
+    
+    <script>
+        let currentAudio = null;
+        let currentPlayingDataUrl = null;
+        let history = JSON.parse(localStorage.getItem('tts-history')) || [];
+
+        // Sistema de informações de vozes
+        function updateVoiceInfo() {
+            const select = document.getElementById('voice-select');
+            const infoDiv = document.getElementById('voice-info');
+            const selectedOption = select.options[select.selectedIndex];
+            
+            infoDiv.innerHTML = `
+                <div class="voice-details">
+                    <small>Tipo: ${selectedOption.dataset.type}</small>
+                    <small>Gênero: ${selectedOption.dataset.gender}</small>
+                </div>
+            `;
+        }
+
+        document.getElementById('voice-select').addEventListener('change', updateVoiceInfo);
+        updateVoiceInfo();
+
+        async function generateAudio() {
+            const text = document.getElementById('text-input').value.trim();
+            const voice = document.getElementById('voice-select').value;
+            
+            if (!text) {
+                showMessage('Por favor, digite algum texto!', 'error');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                const response = await fetch(`https://text.pollinations.ai/p/${encodeURIComponent(text)}?model=openai-audio&voice=${voice}`);
+                
+                if (!response.ok) throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                
+                const audioBlob = await response.blob();
+                await addToHistory(text, voice, audioBlob);
+                
+                const audioUrl = URL.createObjectURL(audioBlob);
+                showAudioPlayer(audioUrl);
+                showMessage('Áudio gerado com sucesso!', 'success');
+
+                document.getElementById('audio-player').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+
+            } catch (error) {
+                showMessage(`Erro: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function addToHistory(text, voice, audioBlob) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const historyItem = {
+                        text: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
+                        voice,
+                        date: new Date().toISOString(),
+                        audioData: reader.result
+                    };
+
+                    history.unshift(historyItem);
+                    if(history.length > 100) history.pop();
+                    localStorage.setItem('tts-history', JSON.stringify(history));
+                    renderHistory();
+                    resolve();
+                };
+                reader.readAsDataURL(audioBlob);
+            });
+        }
+
+        function showAudioPlayer(audioUrl) {
+            const player = document.getElementById('audio-player');
+            player.classList.remove('hidden');
+            
+            if (currentAudio) {
+                currentAudio.pause();
+                URL.revokeObjectURL(currentAudio.src);
+            }
+            
+            currentAudio = new Audio(audioUrl);
+            
+            const updatePlayButton = () => {
+                const playBtn = document.getElementById('play-btn');
+                playBtn.innerHTML = currentAudio.paused ? '<i class="fas fa-play"></i>' : '<i class="fas fa-pause"></i>';
+            };
+
+            currentAudio.addEventListener('loadedmetadata', () => {
+                document.getElementById('duration').textContent = 
+                    formatTime(currentAudio.duration);
+            });
+
+            currentAudio.addEventListener('timeupdate', () => {
+                document.getElementById('current-time').textContent = 
+                    formatTime(currentAudio.currentTime);
+                document.getElementById('progress').style.width = 
+                    `${(currentAudio.currentTime / currentAudio.duration) * 100}%`;
+            });
+
+            currentAudio.addEventListener('play', () => {
+                updatePlayButton();
+                renderHistory();
+            });
+
+            currentAudio.addEventListener('pause', () => {
+                updatePlayButton();
+                renderHistory();
+            });
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            seconds = Math.floor(seconds % 60);
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function togglePlay() {
+            if(!currentAudio) return;
+            currentAudio.paused ? currentAudio.play() : currentAudio.pause();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            list.innerHTML = history.map((item, index) => {
+                const date = new Date(item.date);
+                const isPlaying = currentPlayingDataUrl === item.audioData && 
+                                currentAudio && 
+                                !currentAudio.paused;
+                const voiceOption = document.querySelector(`#voice-select option[value="${item.voice}"]`);
+                const voiceType = voiceOption ? voiceOption.dataset.type : 'Desconhecido';
+
+                return `
+                    <div class="history-item ${isPlaying ? 'playing' : ''}">
+                        <div class="item-text">${item.text}</div>
+                        <div class="item-details">
+                            <span class="voice-tag">${voiceType}</span>
+                            <span>${date.toLocaleDateString('pt-BR')}</span>
+                            <span>${date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}</span>
+                        </div>
+                        <div class="history-controls">
+                            <button class="control-btn" onclick="playHistory(${index})">
+                                <i class="fas fa-${isPlaying ? 'pause' : 'play'}"></i>
+                            </button>
+                            <button class="control-btn" onclick="downloadHistory(${index})">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function playHistory(index) {
+            const item = history[index];
+            const audioUrl = dataURItoURL(item.audioData);
+            
+            if(currentPlayingDataUrl === item.audioData) {
+                togglePlay();
+            } else {
+                if(currentAudio) {
+                    currentAudio.pause();
+                    URL.revokeObjectURL(currentAudio.src);
+                }
+                
+                currentPlayingDataUrl = item.audioData;
+                currentAudio = new Audio(audioUrl);
+                currentAudio.play();
+                
+                currentAudio.addEventListener('play', () => renderHistory());
+                currentAudio.addEventListener('pause', () => renderHistory());
+                currentAudio.addEventListener('ended', () => {
+                    URL.revokeObjectURL(audioUrl);
+                    currentPlayingDataUrl = null;
+                    renderHistory();
+                });
+            }
+        }
+
+        function dataURItoBlob(dataURI) {
+            const byteString = atob(dataURI.split(',')[1]);
+            const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            return new Blob([ab], {type: mimeString});
+        }
+
+        function dataURItoURL(dataURI) {
+            const blob = dataURItoBlob(dataURI);
+            return URL.createObjectURL(blob);
+        }
+
+        function downloadCurrentAudio() {
+            if(history.length === 0) {
+                showMessage('Nenhum áudio gerado recentemente!', 'error');
+                return;
+            }
+            
+            const latestItem = history[0];
+            const audioBlob = dataURItoBlob(latestItem.audioData);
+            const audioUrl = URL.createObjectURL(audioBlob);
+            
+            try {
+                forceDownload(audioUrl, `audio-${latestItem.voice}-${Date.now()}.mp3`);
+            } catch (error) {
+                showMessage('Erro ao baixar o áudio', 'error');
+            } finally {
+                setTimeout(() => URL.revokeObjectURL(audioUrl), 60000);
+            }
+        }
+
+        function downloadHistory(index) {
+            const item = history[index];
+            const audioBlob = dataURItoBlob(item.audioData);
+            const audioUrl = URL.createObjectURL(audioBlob);
+            
+            try {
+                forceDownload(audioUrl, `audio-${item.voice}-${Date.now()}.mp3`);
+            } catch (error) {
+                showMessage('Erro ao baixar o áudio', 'error');
+            } finally {
+                setTimeout(() => URL.revokeObjectURL(audioUrl), 60000);
+            }
+        }
+
+        function forceDownload(url, filename) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none';
+        }
+
+        function showMessage(message, type) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.background = type === 'error' ? '#EF4444' : '#10B981';
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        function showTerms() {
+            fetch('termos.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('modal-text').innerHTML = data;
+                    document.getElementById('modal').style.display = 'block';
+                });
+        }
+
+        function showPrivacy() {
+            fetch('privacidade.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('modal-text').innerHTML = data;
+                    document.getElementById('modal').style.display = 'block';
+                });
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if(e.target.classList.contains('modal-overlay')) {
+                closeModal();
+            }
+        });
+
+        renderHistory();
+    </script>
+</body>
+</html>
